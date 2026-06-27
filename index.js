@@ -81,6 +81,12 @@ async function run() {
             const result = await donationRequestCollection.findOne({_id: new ObjectId(id)});
             res.json({status: 200, request: result});
         })
+        app.patch('/request/:id', async (req, res) =>{
+            const id = req.params.id;
+            const body = req.body;
+            const result = await donationRequestCollection.updateOne({_id: new ObjectId(id)}, {$set: req.body});
+            res.json({status: 200, request: result});
+        })
  
 
         app.get('/users-count', async (req, res) => {
