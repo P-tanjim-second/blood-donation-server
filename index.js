@@ -62,7 +62,7 @@ async function run() {
             const page = parseInt(req.query.page);
             const limit = parseInt(req.query.limit);
             const query = {}
-            if(status !== 'all'){
+            if(status){
                 query.status = status;
             }
 
