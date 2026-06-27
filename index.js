@@ -30,6 +30,8 @@ async function run() {
         // await client.connect();
         const db = client.db('blood-donation')
         const donationRequestCollection = db.collection('donation_requests');
+        const userCollection = db.collection('user');
+        const fundingCollection = db.collection('fundings')
 
 
         app.post('/donation-request', async (req, res) => {
@@ -73,6 +75,16 @@ async function run() {
             res.json({status: 200, requests: result, total});
         })
 
+
+        app.get('/users-count', async (req, res) => {
+            const role = req.query.role;
+            const query = {}
+            if (role) {
+                query.role = role;
+            }
+            const result = await userCollection.countDocuments(query);
+            res.json({status: 200, total: result})
+        })
 
 
         // await client.db("admin").command({ ping: 1 });
