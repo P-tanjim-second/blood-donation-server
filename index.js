@@ -13,7 +13,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = process.env.MONGODB_URL;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -76,6 +76,13 @@ async function run() {
         })
 
 
+        app.get('/request/:id', async (req, res) =>{
+            const id = req.params.id;
+            const result = await donationRequestCollection.findOne({_id: new ObjectId(id)});
+            res.json({status: 200, request: result});
+        })
+ 
+
         app.get('/users-count', async (req, res) => {
             const role = req.query.role;
             const query = {}
@@ -86,6 +93,12 @@ async function run() {
             res.json({status: 200, total: result})
         })
 
+
+
+        app.get('/total_funding', async (req, res) => {
+            const result = await fundingCollection.findOne({_id: new ObjectId(process.env.FUNDING_ID)});
+            res.json({status: 200, funding: result?.totalFunding || 0});
+        })
 
         // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
