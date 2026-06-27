@@ -18,23 +18,34 @@ const uri = process.env.MONGODB_URL;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
 async function run() {
-  try {
-    // await client.connect();
-    const db = client.db('blood-donation')
+    try {
+        // await client.connect();
+        const db = client.db('blood-donation')
+        const donationRequestCollection = db.collection('donation_requests');
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // await client.close();
-  }
+
+        app.post('/donation-request', async (req, res) => {
+            const data = req.body;
+            const result = await donationRequestCollection.insertOne(data);
+            res.json({ status: 200, message: "Donation Request Added Successfully." })
+        });
+
+
+       
+
+        await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    } finally {
+        // await client.close();
+    }
 }
 run().catch(console.dir);
 
