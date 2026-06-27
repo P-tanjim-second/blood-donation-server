@@ -84,8 +84,18 @@ async function run() {
         app.patch('/request/:id', async (req, res) =>{
             const id = req.params.id;
             const body = req.body;
-            const result = await donationRequestCollection.updateOne({_id: new ObjectId(id)}, {$set: req.body});
+            const result = await donationRequestCollection.updateOne({_id: new ObjectId(id)}, {$set: body});
             res.json({status: 200, request: result});
+        })
+        app.delete('/request/:id', async (req, res) =>{
+            const id = req.params.id;
+            const result = await donationRequestCollection.deleteOne({_id: new ObjectId(id)});
+            if(result.deletedCount === 1){
+                res.json({status: 200, deleted: true});
+            }
+            else{
+                res.json({status: 404, deleted: false});
+            }
         })
  
 
