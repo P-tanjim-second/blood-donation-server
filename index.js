@@ -56,7 +56,26 @@ async function run() {
             res.json({ status: 200, requests: result, total });
         })
 
-        await client.db("admin").command({ ping: 1 });
+
+        app.get('/all-requests', async (req, res) =>{
+            const status = req.query.status;
+            const page = parseInt(req.query.page);
+            const limit = parseInt(req.query.limit);
+            const query = {}
+            if(status !== 'all'){
+                query.status = status;
+            }
+
+            const skip = (page-1) * 10;
+
+            const total = await donationRequestCollection.countDocuments(query);
+            const result = await donationRequestCollection.find(query).skip(skip).limit(limit).toArray();
+            res.json({status: 200, requests: result, total});
+        })
+
+
+
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // await client.close();
