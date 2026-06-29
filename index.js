@@ -12,30 +12,30 @@ app.use(express.json());
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
+// const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 const uri = process.env.MONGODB_URL;
 
-const JWKS = createRemoteJWKSet(
-    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
-)
+// const JWKS = createRemoteJWKSet(
+//     new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+// )
 
-const verifyToken = async (req, res, next) => {
-    const authorization = req.headers?.authorization;
-    if(!authorization){
-        return res.status(401).json({status: 401, message: "unauthorized"});
-    }
-    const token = authorization.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({status: 401, message: "unauthorized"});
-    }
+// const verifyToken = async (req, res, next) => {
+//     const authorization = req.headers?.authorization;
+//     if(!authorization){
+//         return res.status(401).json({status: 401, message: "unauthorized"});
+//     }
+//     const token = authorization.split(" ")[1];
+//     if (!token) {
+//         return res.status(401).json({status: 401, message: "unauthorized"});
+//     }
 
-    try {
-        const {payload} =await jwtVerify(token, JWKS)
-    } catch {
-        return res.status(403).json({status: 403, message: "Forbidden"})
-    }
+//     try {
+//         const {payload} =await jwtVerify(token, JWKS)
+//     } catch {
+//         return res.status(403).json({status: 403, message: "Forbidden"})
+//     }
     
-}
+// }
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -121,10 +121,10 @@ async function run() {
 
 
         app.get('/users-count', async (req, res) => {
-            const role = req.query.role;
+            const userRole = req.query.userRole;
             const query = {}
-            if (role) {
-                query.role = role;
+            if (userRole) {
+                query.userRole = userRole;
             }
             const result = await userCollection.countDocuments(query);
             res.json({ status: 200, total: result })
@@ -145,10 +145,19 @@ async function run() {
             if (upazila) {
                 query.upazila = upazila;
             }
-            query.role = "donor";
-            const total = await userCollection.countDocuments({role: "donor"})
+            query.userRole = "donor";
+            console.log(query)
+            const total = await userCollection.countDocuments({userRole: "donor"})
             const result = await userCollection.find(query).toArray();
             res.json({ status: 200, donors: result, total })
+        })
+
+
+        app.patch('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const body = req.body;
+            const result = await userCollection.updateOne({ _id: new ObjectId(id) }, { $set: body });
+            res.json({ status: 200, user: result });
         })
 
 
@@ -157,7 +166,7 @@ async function run() {
                 const page = parseInt(req.query.page, 10) || 1;
                 const limit = parseInt(req.query.limit, 10) || 10;
                 const status = req.query.status;
-                const role = req.query.role;
+                const userRole = req.query.userRole;
 
                 const skip = (page - 1) * limit;
 
@@ -165,8 +174,8 @@ async function run() {
                 if (status) {
                     query.status = status;
                 }
-                if (role) {
-                    query.role = role;
+                if (userRole) {
+                    query.userRole = userRole;
                 }
 
                 const total = await userCollection.countDocuments(query);
