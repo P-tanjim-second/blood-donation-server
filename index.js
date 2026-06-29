@@ -11,10 +11,31 @@ app.use(cors());
 app.use(express.json());
 
 
-
-
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 const uri = process.env.MONGODB_URL;
+
+const JWKS = createRemoteJWKSet(
+    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+)
+
+const verifyToken = async (req, res, next) => {
+    const authorization = req.headers?.authorization;
+    if(!authorization){
+        return res.status(401).json({status: 401, message: "unauthorized"});
+    }
+    const token = authorization.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({status: 401, message: "unauthorized"});
+    }
+
+    try {
+        const {payload} =await jwtVerify(token, JWKS)
+    } catch {
+        return res.status(403).json({status: 403, message: "Forbidden"})
+    }
+    
+}
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
