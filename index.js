@@ -110,6 +110,27 @@ async function run() {
         })
 
 
+        app.get('/donors', async (req, res) => {
+            const bloodGroup = req.query.bloodGroup?.trim();
+            const district = req.query.district?.trim();
+            const upazila = req.query.upazila?.trim();
+            const query = {}
+            if (bloodGroup) {
+                query.bloodGroup = bloodGroup;
+            }
+            if (district) {
+                query.district = district;
+            }
+            if (upazila) {
+                query.upazila = upazila;
+            }
+            query.role = "donor";
+            const total = await userCollection.countDocuments({role: "donor"})
+            const result = await userCollection.find(query).toArray();
+            res.json({ status: 200, donors: result, total })
+        })
+
+
         app.get('/all-users', async (req, res) => {
             try {
                 const page = parseInt(req.query.page, 10) || 1;
