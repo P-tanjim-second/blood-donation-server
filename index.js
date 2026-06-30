@@ -12,31 +12,31 @@ app.use(express.json());
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
+// const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 const uri = process.env.MONGODB_URL;
 
-const JWKS = createRemoteJWKSet(
-    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
-)
+// const JWKS = createRemoteJWKSet(
+//     new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+// )
 
-const verifyToken = async (req, res, next) => {
-    const authorization = req.headers?.authorization;
-    if(!authorization){
-        return res.status(401).json({status: 401, message: "unauthorized"});
-    }
-    const token = authorization.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({status: 401, message: "unauthorized"});
-    }
-    console.log(token)
+// const verifyToken = async (req, res, next) => {
+//     const authorization = req.headers?.authorization;
+//     if(!authorization){
+//         return res.status(401).json({status: 401, message: "unauthorized"});
+//     }
+//     const token = authorization.split(" ")[1];
+//     if (!token) {
+//         return res.status(401).json({status: 401, message: "unauthorized"});
+//     }
+//     console.log(token)
 
-    try {
-        const {payload} =await jwtVerify(token, JWKS)
-    } catch {
-        return res.status(403).json({status: 403, message: "Forbidden"})
-    }
+//     try {
+//         const {payload} =await jwtVerify(token, JWKS)
+//     } catch {
+//         return res.status(403).json({status: 403, message: "Forbidden"})
+//     }
     
-}
+// }
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -56,14 +56,14 @@ async function run() {
         const fundingCollection = db.collection('fundings')
 
 
-        app.post('/donation-request', verifyToken, async (req, res) => {
+        app.post('/donation-request', async (req, res) => {
             const data = req.body;
             const result = await donationRequestCollection.insertOne(data);
             res.json({ status: 200, message: "Donation Request Added Successfully." })
         });
 
 
-        app.get('/my-donation-requests/:email', verifyToken,async (req, res) => {
+        app.get('/my-donation-requests/:email',async (req, res) => {
             const email = req.params.email;
             const status = req.query.status;
             const page = req.query.page;
@@ -98,18 +98,18 @@ async function run() {
         })
 
 
-        app.get('/request/:id', verifyToken,async (req, res) => {
+        app.get('/request/:id',async (req, res) => {
             const id = req.params.id;
             const result = await donationRequestCollection.findOne({ _id: new ObjectId(id) });
             res.json({ status: 200, request: result });
         })
-        app.patch('/request/:id',verifyToken, async (req, res) => {
+        app.patch('/request/:id', async (req, res) => {
             const id = req.params.id;
             const body = req.body;
             const result = await donationRequestCollection.updateOne({ _id: new ObjectId(id) }, { $set: body });
             res.json({ status: 200, request: result });
         })
-        app.delete('/request/:id',verifyToken, async (req, res) => {
+        app.delete('/request/:id', async (req, res) => {
             const id = req.params.id;
             const result = await donationRequestCollection.deleteOne({ _id: new ObjectId(id) });
             if (result.deletedCount === 1) {
@@ -121,7 +121,7 @@ async function run() {
         })
 
 
-        app.get('/users-count',verifyToken, async (req, res) => {
+        app.get('/users-count', async (req, res) => {
             const userRole = req.query.userRole;
             const query = {}
             if (userRole) {
@@ -154,7 +154,7 @@ async function run() {
         })
 
 
-        app.patch('/user/:id', verifyToken,async (req, res) => {
+        app.patch('/user/:id',async (req, res) => {
             const id = req.params.id;
             const body = req.body;
             const result = await userCollection.updateOne({ _id: new ObjectId(id) }, { $set: body });
@@ -162,7 +162,7 @@ async function run() {
         })
 
 
-        app.get('/all-users', verifyToken,async (req, res) => {
+        app.get('/all-users',async (req, res) => {
             try {
                 const page = parseInt(req.query.page, 10) || 1;
                 const limit = parseInt(req.query.limit, 10) || 10;
